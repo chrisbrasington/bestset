@@ -54,7 +54,7 @@ def search_roms(search_term, system_folder, max_depth=2):
         else:
             start_path = resolve_case_insensitive_path(base_dir, system_folder)
 
-            # SPECIAL CASE: If system_folder is PS1 but not found, try PS
+            # SPECIAL CASE: If system_folder is PS1 but not found, try PS instead
             if start_path is None and system_folder.upper() == "PS1":
                 alt_system_folder = "PS"
                 start_path = resolve_case_insensitive_path(base_dir, alt_system_folder)
@@ -86,7 +86,7 @@ def deep_search_roms(search_term, system_folder):
         Path(os.path.expanduser("~/roms/rg34xx/ROMS")),
         Path(os.path.expanduser("~/roms/miyoo/Roms")),
         Path("/mnt/archive/tertiary/emulation/roms"),
-        Path("~/Downloads")
+        Path(os.path.expanduser("~/Downloads"))
     ]
 
     def file_matches(file, term):
@@ -118,18 +118,34 @@ def clean_filename(name):
     # Split name and extension
     stem, ext = name.rsplit('.', 1)
 
-    # Function to conditionally remove bracketed parts
-    def remove_brackets(match):
-        content = match.group(1)
-        # Keep bracket if it contains 'romhack' (case insensitive)
-        if 'romhack' in content.lower():
-            return match.group(0)  # keep brackets and content
-        else:
-            return ''  # remove brackets and content
+    # Check for disc info in parentheses (e.g. "(Disc 1)")
+    disc_paren_match = re.search(r'\(Disc\s*\d+\)', stem, re.IGNORECASE)
+    if disc_paren_match:
+        # Extract disc part to keep it
+        disc_part = disc_paren_match.group(0)
+        # Remove all parentheses and brackets except the disc part
+        def remove_brackets_except_disc(match):
+            content = match.group(0)
+            if content == disc_part:
+                return content  # keep disc parentheses
+            if 'romhack' in content.lower():
+                return content  # keep romhack brackets
+            return ''  # remove other brackets
 
-    # Remove (...) and [...] unless they contain 'romhack'
-    stem = re.sub(r'\(([^)]*)\)', remove_brackets, stem)
-    stem = re.sub(r'\[([^]]*)\]', remove_brackets, stem)
+        # Remove all (...) and [...] except disc part and romhack
+        stem = re.sub(r'\([^)]*\)', remove_brackets_except_disc, stem)
+        stem = re.sub(r'\[[^]]*\]', remove_brackets_except_disc, stem)
+    else:
+        # Remove (...) and [...] unless they contain 'romhack'
+        def remove_brackets(match):
+            content = match.group(1)
+            if 'romhack' in content.lower():
+                return match.group(0)
+            else:
+                return ''
+
+        stem = re.sub(r'\(([^)]*)\)', remove_brackets, stem)
+        stem = re.sub(r'\[([^]]*)\]', remove_brackets, stem)
 
     # Clean up extra spaces from removals
     stem = re.sub(r'\s+', ' ', stem).strip()

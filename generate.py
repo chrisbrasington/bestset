@@ -25,7 +25,9 @@ def scan_roms(base_dirs):
     games_by_system = defaultdict(list)
 
     # Regex to detect "[DiscXofY]" in file stem
-    disc_pattern = re.compile(r"^(.*)\s\[(Disc\d+of\d+)\]$", re.IGNORECASE)
+    disc_pattern_sq = re.compile(r"^(.*)\s\[(Disc\d+of\d+)\]$", re.IGNORECASE)
+    # Regex to detect "(Disc X)" style (with optional space)
+    disc_pattern_paren = re.compile(r"^(.*)\s\((Disc\s*\d+)\)$", re.IGNORECASE)
 
     for base_dir, extended in base_dirs:
         base_path = Path(os.path.expanduser(base_dir))
@@ -53,7 +55,13 @@ def scan_roms(base_dirs):
                     if file_path.is_file():
                         romhack = 'romhack' in file.lower()
                         stem = file_path.stem
-                        match = disc_pattern.match(stem)
+
+                        # Try square bracket disc pattern first
+                        match = disc_pattern_sq.match(stem)
+                        if not match:
+                            # Try parenthesis disc pattern second
+                            match = disc_pattern_paren.match(stem)
+
                         if match:
                             base_name = match.group(1).strip()  # Remove disc info for grouping
                             grouped_games[base_name]["files"].append(file)
