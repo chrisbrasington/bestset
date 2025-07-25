@@ -60,36 +60,36 @@ def save_to_json(games_by_system, output_path="games.json"):
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
 
-def generate_table(title, games):
+def generate_table(games):
     if not games:
         return []
 
-    lines = [f"## {title}", ""]
-    lines.append("| Name | File | Extended |")
-    lines.append("|------|------|----------|")
-    for game in sorted(games, key=lambda g: g.name.lower()):
+    lines = []
+    lines.append("| System | Name | File | Extended | Romhack |")
+    lines.append("|--------|------|------|----------|---------|")
+    # Sort by system, then by game name
+    for game in sorted(games, key=lambda g: (g.system.lower(), g.name.lower())):
         ext = "Yes" if game.extended else "No"
-        lines.append(f"| {game.name} | {game.filename} | {ext} |")
+        rh = "Yes" if game.romhack else "No"
+        lines.append(f"| {game.system} | {game.name} | {game.filename} | {ext} | {rh} |")
     lines.append("")  # blank line after table
     return lines
 
+
 def save_to_markdown(games_by_system, output_path="output.md"):
-    lines = []
-    for system in sorted(games_by_system):
-        lines.append(f"# {system}")
-        lines.append("")
+    # Flatten all games from all systems into one list
+    all_games = []
+    for system, games in games_by_system.items():
+        for game in games:
+            # Attach system name to each game for table
+            game.system = system
+            all_games.append(game)
 
-        all_games = games_by_system[system]
-        regular_games = [g for g in all_games if not g.romhack]
-        romhack_games = [g for g in all_games if g.romhack]
-
-        if regular_games:
-            lines.extend(generate_table(f"{system} - Games", regular_games))
-        if romhack_games:
-            lines.extend(generate_table(f"{system} - Rom Hacks", romhack_games))
+    lines = generate_table(all_games)
 
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
+
 
 if __name__ == "__main__":
     base_dirs = [
