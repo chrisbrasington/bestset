@@ -37,6 +37,10 @@ def scan_roms(base_dirs):
 
             for root, _, files in os.walk(system_dir):
                 for file in files:
+                    # Skip .sav and .zip files
+                    if file.lower().endswith(('.sav', '.zip')):
+                        continue
+
                     file_path = Path(root) / file
                     if file_path.is_file():
                         name = file_path.stem
