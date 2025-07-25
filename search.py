@@ -34,9 +34,53 @@ def walk_with_depth(path: Path, max_depth: int):
 
 def search_roms(search_term, system_folder, max_depth=2):
     base_dirs = [
-        Path("~/roms/rg34xx/ROMS"),
-        Path("~/roms/miyoo/Roms"),
-        Path("/mnt/archive/tertiary/emulation/roms")
+        Path(os.path.expanduser("~/roms/rg34xx/ROMS")),
+        Path(os.path.expanduser("~/roms/miyoo/Roms")),
+        Path("/mnt/archive/tertiary/emulation/roms"),
+        Path(os.path.expanduser("~/Downloads"))
+    ]
+
+    def file_matches(file, term):
+        return (
+            file.suffix.lower() not in ['.png', '.sav', '.zip'] and
+            term.lower() in file.name.lower()
+        )
+
+    matches = []
+    for base_dir in base_dirs:
+        if base_dir == Path(os.path.expanduser("~/Downloads")):
+            # search all of ~/Downloads recursively, ignoring system_folder subfolder
+            start_path = base_dir
+        else:
+            start_path = resolve_case_insensitive_path(base_dir, system_folder)
+            if not start_path:
+                continue
+
+        if base_dir == Path(os.path.expanduser("~/Downloads")):
+            # Recursive search in all Downloads
+            for root, dirs, files in os.walk(start_path):
+                for f in files:
+                    file_path = Path(root) / f
+                    if file_matches(file_path, search_term):
+                        matches.append(file_path)
+        else:
+            # Limited depth search for others
+            for file in walk_with_depth(start_path, max_depth):
+                if file_matches(file, search_term):
+                    matches.append(file)
+
+    return matches
+
+def deep_search_roms(search_term, system_folder):
+    """
+    Deep search starting one directory above system folder,
+    searching fully recursively.
+    """
+    base_dirs = [
+        Path(os.path.expanduser("~/roms/rg34xx/ROMS")),
+        Path(os.path.expanduser("~/roms/miyoo/Roms")),
+        Path("/mnt/archive/tertiary/emulation/roms"),
+        Path("~/Downloads")
     ]
 
     def file_matches(file, term):
@@ -48,12 +92,16 @@ def search_roms(search_term, system_folder, max_depth=2):
     matches = []
     for base_dir in base_dirs:
         system_path = resolve_case_insensitive_path(base_dir, system_folder)
-        if not system_path:
-            continue
+        if system_path:
+            start_path = system_path.parent  # one directory above system folder
+        else:
+            start_path = base_dir  # fallback: base dir itself
 
-        for file in walk_with_depth(system_path, max_depth):
-            if file_matches(file, search_term):
-                matches.append(file)
+        for root, dirs, files in os.walk(start_path):
+            for file in files:
+                fpath = Path(root) / file
+                if file_matches(fpath, search_term):
+                    matches.append(fpath)
 
     return matches
 
@@ -110,16 +158,24 @@ def main():
     print(f"Detected system: {system_folder}")
 
     while True:
-        search_term = input("\nEnter search term (or 'q' to quit): ").strip()
-        if search_term.lower() == 'q':
-            print("Quitting.")
+        while True:
+            search_term = input("\nEnter search term (or 'q' to quit): ").strip()
+            if search_term.lower() == 'q':
+                print("Quitting.")
+                return
+            if search_term == "":
+                print("Empty search term, please enter something.")
+                continue
             break
 
         matching_files = search_roms(search_term, system_folder)
 
         if not matching_files:
-            print("No matching files found.")
-            continue
+            print("No matching files found in normal search. Running deep search...")
+            matching_files = deep_search_roms(search_term, system_folder)
+            if not matching_files:
+                print("No matching files found in deep search either.")
+                continue
 
         print("\nFound files:")
         for i, f in enumerate(matching_files, 1):
