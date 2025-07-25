@@ -1,0 +1,1 @@
+while true; do python generate.py; sleep 1; done
