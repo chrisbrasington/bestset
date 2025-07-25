@@ -53,6 +53,12 @@ def search_roms(search_term, system_folder, max_depth=2):
             start_path = base_dir
         else:
             start_path = resolve_case_insensitive_path(base_dir, system_folder)
+
+            # SPECIAL CASE: If system_folder is PS1 but not found, try PS
+            if start_path is None and system_folder.upper() == "PS1":
+                alt_system_folder = "PS"
+                start_path = resolve_case_insensitive_path(base_dir, alt_system_folder)
+
             if not start_path:
                 continue
 
