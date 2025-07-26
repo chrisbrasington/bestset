@@ -8,7 +8,7 @@ class Game:
     def __init__(self, system: str, name: str, filenames: list, extended: bool, romhack: bool):
         self.system = system
         self.name = name
-        self.filenames = filenames  # list of files in this group
+        self.filenames = filenames
         self.extended = extended
         self.romhack = romhack
 
@@ -24,9 +24,7 @@ class Game:
 def scan_roms(base_dirs):
     games_by_system = defaultdict(list)
 
-    # Regex to detect "[DiscXofY]" in file stem
     disc_pattern_sq = re.compile(r"^(.*)\s\[(Disc\d+of\d+)\]$", re.IGNORECASE)
-    # Regex to detect "(Disc X)" style (with optional space)
     disc_pattern_paren = re.compile(r"^(.*)\s\((Disc\s*\d+)\)$", re.IGNORECASE)
 
     for base_dir, extended in base_dirs:
@@ -47,7 +45,6 @@ def scan_roms(base_dirs):
 
             for root, _, files in os.walk(system_dir):
                 for file in files:
-                    # Skip unwanted file types
                     if file.lower().endswith(('.sav', '.zip')):
                         continue
 
@@ -56,14 +53,12 @@ def scan_roms(base_dirs):
                         romhack = 'romhack' in file.lower()
                         stem = file_path.stem
 
-                        # Try square bracket disc pattern first
                         match = disc_pattern_sq.match(stem)
                         if not match:
-                            # Try parenthesis disc pattern second
                             match = disc_pattern_paren.match(stem)
 
                         if match:
-                            base_name = match.group(1).strip()  # Remove disc info for grouping
+                            base_name = match.group(1).strip()
                             grouped_games[base_name]["files"].append(file)
                             grouped_games[base_name]["romhack"] = grouped_games[base_name]["romhack"] or romhack
                         else:
@@ -83,25 +78,22 @@ def scan_roms(base_dirs):
 
     return games_by_system
 
-
 def generate_table(games):
     if not games:
         return []
 
     lines = []
-    lines.append("| System | Name | Files | Extended | Romhack |")
-    lines.append("|--------|------|-------|----------|---------|")
+    lines.append("| System | Name | Files | Romhack |")
+    lines.append("|--------|------|-------|---------|")
 
-    # Sort by system, then by game name
     for game in sorted(games, key=lambda g: (g.system.lower(), g.name.lower())):
         ext = "Yes" if game.extended else "No"
         rh = "Yes" if game.romhack else "No"
         files_joined = ", ".join(game.filenames)
-        lines.append(f"| {game.system} | {game.name} | {files_joined} | {ext} | {rh} |")
+        lines.append(f"| {game.system} | {game.name} | {files_joined} | {rh} |")
 
-    lines.append("")  # blank line after table
+    lines.append("")
     return lines
-
 
 def save_to_json(games_by_system, output_path="games.json"):
     output = {
@@ -111,20 +103,23 @@ def save_to_json(games_by_system, output_path="games.json"):
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
 
-
 def save_to_markdown(games_by_system, output_path="output.md"):
     all_games = []
     for system, games in games_by_system.items():
         for game in games:
-            # Attach system name to each game for table sorting/printing
-            game.system = system
             all_games.append(game)
 
-    lines = generate_table(all_games)
-
+    # Save combined output.md
+    combined_lines = generate_table(all_games)
     with open(output_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines))
+        f.write("\n".join(combined_lines))
 
+    # Save one file per system
+    for system, games in games_by_system.items():
+        lines = generate_table(games)
+        file_name = f"{system}.md"
+        with open(file_name, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines))
 
 if __name__ == "__main__":
     base_dirs = [
@@ -135,4 +130,4 @@ if __name__ == "__main__":
     games_by_system = scan_roms(base_dirs)
     save_to_json(games_by_system)
     save_to_markdown(games_by_system)
-    print("Games indexed and saved to games.json and output.md")
+    print("✅ Games saved to games.json, output.md, and per-system markdown files.")
