@@ -49,5 +49,4 @@ python generate.py
 
 ## Notes
 
-* Both scripts use hardcoded paths - adjust these in the scripts if needed.
-* Filenames are cleaned and managed smartly during copying and generating reports.
+* modify config.json for paths
