@@ -1,6 +1,6 @@
 # Rom Best-Set Helper
 
-## Why?
+#### Why?
 ROM collections can easily balloon into tens of thousands of files, especially if you download complete sets. Many come with confusing filenames, release numbers, or redundant variants that make browsing frustrating.
 
 Most players only want a curated library: favorite titles, hidden gems, or unique romhacks worth keeping. Digging through huge folders every time you want to play is tedious.
