@@ -1,15 +1,19 @@
+import json
 import os
 import shutil
 import re
 from pathlib import Path
 
-# Constants
-BASE_DIRS = [
-    Path(os.path.expanduser("~/roms/rg34xx/ROMS")),
-    Path(os.path.expanduser("~/roms/miyoo/Roms")),
-    Path("/mnt/archive/tertiary/emulation/roms"),
-    Path(os.path.expanduser("~/Downloads")),
-]
+# Load config.json
+with open("config.json", "r") as f:
+    config = json.load(f)
+
+# Expand ~ into home directory
+BASE_DIRS = [Path(os.path.expanduser(p)) for p in config["base_dirs"]]
+
+# print("Loaded BASE_DIRS:")
+# for d in BASE_DIRS:
+#     print(" -", d)
 
 SKIP_EXTENSIONS = {'.png', '.sav', '.zip'}
 
@@ -116,7 +120,7 @@ def main():
     current_dir = Path.cwd()
     system_folder = get_system_from_path(current_dir)
 
-    print(f"Detected system: {system_folder}")
+    print(f"Detected system: {system_folder}\n(based of current directory)")
 
     while True:
         search_term = input("\nEnter search term (or 'q' to quit): ").strip()
