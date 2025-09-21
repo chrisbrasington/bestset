@@ -1,0 +1,8 @@
+{
+  "base_dirs": [
+    "~/roms/rg34xx/ROMS",
+    "~/roms/miyoo/Roms",
+    "/mnt/archive/tertiary/emulation/roms",
+    "~/Downloads"
+  ]
+}

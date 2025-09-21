@@ -4,12 +4,13 @@ import shutil
 import re
 from pathlib import Path
 
-# Load config.json
-with open("config.json", "r") as f:
-    config = json.load(f)
+# Get the directory where this script lives
+SCRIPT_DIR = Path(__file__).resolve().parent
+CONFIG_PATH = SCRIPT_DIR / "config.json"
 
-# Expand ~ into home directory
-BASE_DIRS = [Path(os.path.expanduser(p)) for p in config["base_dirs"]]
+# Load config.json from the same directory as this script
+with open(CONFIG_PATH, "r") as f:
+    config = json.load(f)
 
 # print("Loaded BASE_DIRS:")
 # for d in BASE_DIRS:
