@@ -12,11 +12,14 @@ CONFIG_PATH = SCRIPT_DIR / "config.json"
 with open(CONFIG_PATH, "r") as f:
     config = json.load(f)
 
+# Define BASE_DIRS from config
+BASE_DIRS = [Path(p) for p in config.get("BASE_DIRS", [])]
+
 # print("Loaded BASE_DIRS:")
 # for d in BASE_DIRS:
 #     print(" -", d)
 
-SKIP_EXTENSIONS = {'.png', '.sav', '.zip'}
+SKIP_EXTENSIONS = {'.png', '.sav', '.zip', '.sbfres'}
 
 def get_system_from_path(path: Path) -> str:
     return path.name
@@ -121,7 +124,7 @@ def main():
     current_dir = Path.cwd()
     system_folder = get_system_from_path(current_dir)
 
-    print(f"Detected system: {system_folder}\n(based of current directory)")
+    print(f"Detected system: {system_folder}")
 
     while True:
         search_term = input("\nEnter search term (or 'q' to quit): ").strip()
