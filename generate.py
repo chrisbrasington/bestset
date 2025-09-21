@@ -103,31 +103,46 @@ def save_to_json(games_by_system, output_path="games.json"):
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
 
-def save_to_markdown(games_by_system, output_path="output.md"):
+def save_to_markdown(games_by_system, output_path):
+    script_dir = os.path.dirname(output_path)
+
     all_games = []
     for system, games in games_by_system.items():
-        for game in games:
-            all_games.append(game)
+        all_games.extend(games)
 
     # Save combined output.md
     combined_lines = generate_table(all_games)
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("\n".join(combined_lines))
 
-    # Save one file per system
+    # Save one file per system in script_dir
     for system, games in games_by_system.items():
         lines = generate_table(games)
-        file_name = f"{system}.md"
+        file_name = os.path.join(script_dir, f"{system}.md")
         with open(file_name, "w", encoding="utf-8") as f:
             f.write("\n".join(lines))
 
 if __name__ == "__main__":
-    base_dirs = [
-        ("~/roms/best", False),
-        ("~/roms/best_extended", True)
-    ]
+    # find the config.json in the same directory as generate.py
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config_path = os.path.join(script_dir, "config.json")
 
+    with open(config_path, "r", encoding="utf-8") as f:
+        config = json.load(f)
+
+    target_dirs = config.get("TARGET_DIRS", [])
+    extended_dirs = config.get("EXTENDED_TARGET_DIRS", [])
+
+    # build base_dirs in the same structure you had before
+    base_dirs = [(d, False) for d in target_dirs] + [(d, True) for d in extended_dirs]
+
+    print("Base dirs loaded from config.json:")
+    for path, is_extended in base_dirs:
+        print(f"  {path} (extended={is_extended})")
+        
     games_by_system = scan_roms(base_dirs)
-    save_to_json(games_by_system)
-    save_to_markdown(games_by_system)
+
+    # save everything into script_dir
+    save_to_json(games_by_system, os.path.join(script_dir, "games.json"))
+    save_to_markdown(games_by_system, os.path.join(script_dir, "output.md"))
     print("✅ Games saved to games.json, output.md, and per-system markdown files.")

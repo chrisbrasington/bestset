@@ -4,5 +4,11 @@
     "~/roms/miyoo/Roms",
     "/mnt/archive/tertiary/emulation/roms",
     "~/Downloads"
+  ],
+  "TARGET_DIRS": [
+    "~/roms/best"
+  ],
+  "EXTENDED_TARGET_DIRS": [
+    "~/roms/best_extended"
   ]
 }
