@@ -1,3 +1,13 @@
+# Rom Best Set Helper
+
+ROM directories can easily grow into the tens or even hundreds of thousands of files, especially if you download complete sets. They can have files with release numbers for weird ordering. 
+
+While it’s nice to have everything preserved, in practice most people only want a curated library of favorites, hidden gems, or romhacks worth playing. 
+
+Sifting through massive folders can be overwhelming and inconvenient when all you want is to quickly find and play a game. That’s why making your own “best set” is so useful: it trims the clutter down to the games that matter to you. 
+
+This tool helps by letting you search across your multiple big ROM directories, pick and rename the ones you want, and copy them into a smaller, personalized collection that’s easier to manage and actually fun to browse.
+
 # Game Search and Generate Tools
 
 This repository contains two Python scripts to help manage your game collection:
