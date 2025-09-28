@@ -1,9 +1,9 @@
 {
   "BASE_DIRS": [
+    "~/Downloads",
     "~/roms/rg34xx/ROMS",
     "~/roms/miyoo/Roms",
-    "/mnt/archive/tertiary/emulation/roms",
-    "~/Downloads"
+    "/mnt/archive/tertiary/emulation/roms"
   ],
   "TARGET_DIRS": [
     "~/roms/best"

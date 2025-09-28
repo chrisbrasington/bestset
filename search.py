@@ -13,13 +13,13 @@ with open(CONFIG_PATH, "r") as f:
     config = json.load(f)
 
 # Define BASE_DIRS from config
-BASE_DIRS = [Path(p) for p in config.get("BASE_DIRS", [])]
+BASE_DIRS = [Path(os.path.expanduser(p)) for p in config.get("BASE_DIRS", [])]
 
 # print("Loaded BASE_DIRS:")
 # for d in BASE_DIRS:
 #     print(" -", d)
 
-SKIP_EXTENSIONS = {'.png', '.sav', '.zip', '.sbfres'}
+SKIP_EXTENSIONS = {'.png', '.sav', '.sbfres', '.part'}
 
 def get_system_from_path(path: Path) -> str:
     return path.name
@@ -42,12 +42,17 @@ def walk_with_depth(path: Path, max_depth: int):
         for f in files:
             yield Path(root) / f
 
+def normalize_name(name: str) -> str:
+    # remove anything inside () or []
+    cleaned = re.sub(r'[\(\[].*?[\)\]]', '', name)
+    return re.sub(r'\s+', ' ', cleaned).strip().lower()
+
 def file_matches(file: Path, term: str) -> bool:
     if file.suffix.lower() in SKIP_EXTENSIONS:
         return False
     if term.lower() == "system":
         return True
-    return term.lower() in file.name.lower()
+    return term.lower() in normalize_name(file.name)
 
 def search_roms(search_term: str, system_folder: str, max_depth: int = 2):
     matches = []
